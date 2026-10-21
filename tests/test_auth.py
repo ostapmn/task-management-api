@@ -28,3 +28,15 @@ async def test_wrong_password_and_missing_token(client):
     assert bad.status_code == 401
     assert (await client.get("/tasks")).status_code == 401
     assert (await client.get("/tasks", headers={"Authorization": "Bearer garbage"})).status_code == 401
+
+
+def test_settings_reject_weak_or_placeholder_secret():
+    import pytest
+    from pydantic import ValidationError
+
+    from app.config import Settings
+
+    for bad in ("dev-secret", "CHANGE-ME", "short", "x" * 31):
+        with pytest.raises(ValidationError):
+            Settings(database_url="postgresql+asyncpg://u:p@h/d", secret_key=bad)
+    assert Settings(database_url="postgresql+asyncpg://u:p@h/d", secret_key="k" * 32).secret_key == "k" * 32
