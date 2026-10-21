@@ -1,0 +1,8 @@
+.unlazy/
+.env
+.claude/settings.local.json
+.unlazy-hook-state.json
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
