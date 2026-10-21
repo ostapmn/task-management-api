@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 os.environ["WORKER_ENABLED"] = "false"
+os.environ.setdefault("SECRET_KEY", "test-only-secret-key-0123456789abcdef0123456789")
 
 import asyncpg
 import pytest

@@ -9,13 +9,19 @@ Stack: FastAPI, SQLAlchemy 2 (async, asyncpg), PostgreSQL 16, Alembic, Pydantic 
 ## Run
 
 ```bash
+echo "SECRET_KEY=$(openssl rand -hex 32)" > .env
+echo "POSTGRES_PASSWORD=$(openssl rand -hex 16)" >> .env
 docker compose up --build
 ```
 
+There are no built-in credentials: compose refuses to start without `SECRET_KEY` and
+`POSTGRES_PASSWORD`, and the app refuses to start with a placeholder or a `SECRET_KEY` shorter than
+32 bytes. Postgres is published on `127.0.0.1:5432` only.
+
 The `api` container waits for a healthy Postgres, applies migrations (`alembic upgrade head`)
 and serves on <http://localhost:8000> (Swagger UI at `/docs`).
-Settings come from `.env.example` (`SECRET_KEY`, `ACCESS_TOKEN_EXPIRE_MINUTES`,
-`WORKER_ENABLED`, `WORKER_INTERVAL_SECONDS`). Override `SECRET_KEY` outside local use.
+Settings come from `.env` (see `.env.example`): `SECRET_KEY`, `POSTGRES_PASSWORD`,
+`ACCESS_TOKEN_EXPIRE_MINUTES`, `WORKER_ENABLED`, `WORKER_INTERVAL_SECONDS`.
 
 ## Tests
 
@@ -56,6 +62,8 @@ then nearest deadline (tasks without a deadline last).
 - An assignee may hold at most 10 active tasks (Backlog, In Progress, Review); the assignee row
   is locked while counting so concurrent assignments cannot exceed the limit. The spec's
   "Todo" is treated as Backlog.
+- Known limitation: any user can assign a task to any other user (as the spec describes), so one user
+  can fill another's 10-task quota. A consent or team-membership model would be needed to prevent it.
 - Permissions: only the author edits or deletes; the author or assignee changes status; any
   authenticated user can read tasks and comment.
 
